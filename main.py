@@ -6,7 +6,16 @@ def main():
             data = json.load(f)
     
     filename = data ["originalFilename"]
-    print (filename)
+    timestamp = data["photoTakenTime"]["timestamp"]
+    file_type = data["mimeType"]
+    
+    photo_record = {
+        "filename": filename,
+        "timestamp": timestamp,
+        "type": file_type
+    }
+    
+    print (photo_record)
     
 if __name__ == "__main__":
     main()
