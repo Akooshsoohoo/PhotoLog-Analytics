@@ -1,5 +1,12 @@
+import json
+
 def main():
-    print("initial setup")
+    path = "data/sample.json"   
+     
+    with open(path, "r") as f:
+            data = json.load(f)
+    
+    print (data)
     
 if __name__ == "__main__":
     main()
