@@ -1,5 +1,6 @@
 import json
 import os
+import pandas as pd
 
 def main():
     folder = "data"  # folder containing json files
@@ -10,14 +11,12 @@ def main():
             path = os.path.join(folder, file_name)
 
             with open(path, "r") as f:
-                data = json.load(f)
+                data = json.load(f)  
 
-            # extract fields
             filename = data["originalFilename"]
             timestamp = data["photoTakenTime"]["timestamp"]
             file_type = data["mimeType"]
 
-            # create structured record
             photo_record = {
                 "filename": filename,
                 "timestamp": timestamp,
@@ -26,7 +25,8 @@ def main():
 
             records.append(photo_record)  # add to list
 
-    print(records)  
+    df = pd.DataFrame(records)  
+    print(df)  
 
 if __name__ == "__main__":
     main()
