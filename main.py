@@ -2,37 +2,39 @@ import json
 import os
 import pandas as pd
 
+import parse_data
+import clean_data
+import queries
+import visualizations
+import ml_models
+
 def main():
-    folder = "data"  # folder containing json files
-    records = []  # store all photo records
+    print("=== Step 1: Parsing Takeout JSON files ===")
+    parse_data.main()
 
-    for file_name in os.listdir(folder):
-        if file_name.endswith(".json"):
-            path = os.path.join(folder, file_name)
+    print("\n=== Step 2: Cleaning data and extracting features ===")
+    df = clean_data.load_from_db()
+    df = clean_data.extract_time_features(df)
+    df = clean_data.drop_bad_rows(df)
+    clean_data.write_features_to_db(df)
 
-            with open(path, "r") as f:
-                data = json.load(f)  
+    print("\n=== Step 3: Running SQL queries ===")
+    queries.main()
 
-            filename = data["title"]
-            timestamp = data["photoTakenTime"]["timestamp"]
-            ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else "unknown"
-            media_type = "video" if ext in ("mp4", "mov", "avi") else "photo"
+    print("\n=== Step 4: Generating visualizations ===")
+    viz_df = visualizations.load_data()
+    visualizations.plot_monthly_trend(viz_df)
+    visualizations.plot_hourly_distribution(viz_df)
+    visualizations.plot_weekday_distribution(viz_df)
+    visualizations.plot_media_type_pie(viz_df)
 
-            origin = data.get("googlePhotosOrigin", {})
-            device_type = origin.get("mobileUpload", {}).get("deviceType", "UNKNOWN")
+    print("\n=== Step 5: Running ML models ===")
+    monthly_df = ml_models.load_monthly_counts()
+    ml_models.run_linear_regression(monthly_df)
+    daily_df = ml_models.load_daily_counts()
+    ml_models.run_logistic_regression(daily_df)
 
-            photo_record = {
-                "filename": filename,
-                "timestamp": timestamp,
-                "ext": ext,
-                "media_type": media_type,
-                "device_type": device_type,
-            }
-
-            records.append(photo_record)  # add to list
-
-    df = pd.DataFrame(records)  
-    print(df)  
+    print("\n=== Done ===")
 
 if __name__ == "__main__":
     main()
