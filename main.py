@@ -15,12 +15,18 @@ def main():
 
             filename = data["title"]
             timestamp = data["photoTakenTime"]["timestamp"]
-            file_type = data.get("mimeType", "unknown")
+            ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else "unknown"
+            media_type = "video" if ext in ("mp4", "mov", "avi") else "photo"
+
+            origin = data.get("googlePhotosOrigin", {})
+            device_type = origin.get("mobileUpload", {}).get("deviceType", "UNKNOWN")
 
             photo_record = {
                 "filename": filename,
                 "timestamp": timestamp,
-                "type": file_type
+                "ext": ext,
+                "media_type": media_type,
+                "device_type": device_type,
             }
 
             records.append(photo_record)  # add to list
