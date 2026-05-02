@@ -5,6 +5,7 @@ import os
 
 DB_PATH = "photos.db"
 PLOTS_DIR = "plots"
+os.makedirs(PLOTS_DIR, exist_ok=True)
 
 def load_data():
     conn = sqlite3.connect(DB_PATH)
