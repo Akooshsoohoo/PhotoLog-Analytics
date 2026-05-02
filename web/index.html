@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PhotoLog Analytics</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: sans-serif;
+      background: #f5f5f5;
+      color: #222;
+      padding: 2rem;
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      margin-bottom: 0.25rem;
+    }
+
+    p.subtitle {
+      color: #666;
+      margin-bottom: 2rem;
+      font-size: 0.95rem;
+    }
+
+    .stats {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .card {
+      background: white;
+      border-radius: 8px;
+      padding: 1.2rem 1.6rem;
+      flex: 1;
+      min-width: 140px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    .card .number {
+      font-size: 2rem;
+      font-weight: 700;
+    }
+
+    .card .label {
+      font-size: 0.8rem;
+      color: #888;
+      margin-top: 0.2rem;
+    }
+
+    .charts {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    .chart-box {
+      background: white;
+      border-radius: 8px;
+      padding: 1.2rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    .chart-box h2 {
+      font-size: 0.95rem;
+      margin-bottom: 1rem;
+      color: #444;
+    }
+
+    @media (max-width: 700px) {
+      .charts { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>PhotoLog Analytics</h1>
+  <p class="subtitle">Personal photo-taking behavior — Google Photos metadata (2022–2025)</p>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="charts">
+    <div class="chart-box">
+      <h2>Photos per Year</h2>
+      <canvas id="yearlyChart"></canvas>
+    </div>
+    <div class="chart-box">
+      <h2>Photos by Month</h2>
+      <canvas id="monthlyChart"></canvas>
+    </div>
+    <div class="chart-box">
+      <h2>Activity by Hour of Day (UTC)</h2>
+      <canvas id="hourlyChart"></canvas>
+    </div>
+    <div class="chart-box">
+      <h2>Activity by Day of Week</h2>
+      <canvas id="weekdayChart"></canvas>
+    </div>
+    <div class="chart-box">
+      <h2>Photo vs Video</h2>
+      <canvas id="mediaChart"></canvas>
+    </div>
+  </div>
+
+  <script>
+    const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    const DAY_NAMES   = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+
+    fetch("data/photos.json")
+      .then(r => r.json())
+      .then(data => {
+        renderStats(data.stats);
+        renderBar("yearlyChart",  data.yearly,  d => d.year,    d => d.count);
+        renderBar("monthlyChart", data.monthly, d => MONTH_NAMES[d.month - 1], d => d.count);
+        renderBar("hourlyChart",  data.hourly,  d => d.hour,    d => d.count);
+        renderBar("weekdayChart", data.weekday, d => DAY_NAMES[d.weekday], d => d.count);
+        renderPie("mediaChart",   data.media,   d => d.media_type, d => d.count);
+      });
+
+    function renderStats(s) {
+      const items = [
+        { number: s.total.toLocaleString(),        label: "Total records" },
+        { number: s.total_photos.toLocaleString(), label: "Photos" },
+        { number: s.total_videos.toLocaleString(), label: "Videos" },
+        { number: `${s.first_year}–${s.last_year}`, label: "Years covered" },
+      ];
+      document.getElementById("stats").innerHTML = items.map(i =>
+        `<div class="card"><div class="number">${i.number}</div><div class="label">${i.label}</div></div>`
+      ).join("");
+    }
+
+    function renderBar(id, data, labelFn, valueFn) {
+      new Chart(document.getElementById(id), {
+        type: "bar",
+        data: {
+          labels: data.map(labelFn),
+          datasets: [{ data: data.map(valueFn), backgroundColor: "#4f86c6", borderRadius: 4 }]
+        },
+        options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+      });
+    }
+
+    function renderPie(id, data, labelFn, valueFn) {
+      new Chart(document.getElementById(id), {
+        type: "doughnut",
+        data: {
+          labels: data.map(labelFn),
+          datasets: [{ data: data.map(valueFn), backgroundColor: ["#4f86c6","#f0a500"] }]
+        },
+        options: { plugins: { legend: { position: "bottom" } } }
+      });
+    }
+  </script>
+
+</body>
+</html>
