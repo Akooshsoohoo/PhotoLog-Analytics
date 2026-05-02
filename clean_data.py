@@ -18,6 +18,23 @@ def extract_time_features(df):
     df["taken_hour"] = df["dt"].dt.hour
     return df
 
+def write_features_to_db(df):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    for _, row in df.iterrows():
+        cursor.execute("""
+            UPDATE photos
+            SET taken_year = ?, taken_month = ?, taken_day = ?,
+                taken_weekday = ?, taken_hour = ?
+            WHERE id = ?
+        """, (row["taken_year"], row["taken_month"], row["taken_day"],
+              row["taken_weekday"], row["taken_hour"], row["id"]))
+
+    conn.commit()
+    conn.close()
+    print("Done writing features to database")
+
 def drop_bad_rows(df):
     before = len(df)
     df = df[df["photo_taken_ts"] > 0]
@@ -33,4 +50,5 @@ if __name__ == "__main__":
 
     df = extract_time_features(df)
     df = drop_bad_rows(df)
+    write_features_to_db(df)
     print(df[["title", "photo_taken_ts", "taken_year", "taken_month", "taken_hour"]].head())
