@@ -1,10 +1,23 @@
 import sqlite3
 import pandas as pd
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.metrics import mean_squared_error, r2_score, accuracy_score, classification_report
 
 DB_PATH = "photos.db"
+
+def load_daily_counts():
+    conn = sqlite3.connect(DB_PATH)
+    df = pd.read_sql_query(
+        """SELECT taken_year, taken_month, taken_day, taken_weekday,
+                  COUNT(*) as count
+           FROM photos
+           WHERE taken_year IS NOT NULL
+           GROUP BY taken_year, taken_month, taken_day""",
+        conn
+    )
+    conn.close()
+    return df
 
 def load_monthly_counts():
     conn = sqlite3.connect(DB_PATH)
@@ -36,9 +49,30 @@ def run_linear_regression(df):
     print(f"MSE: {mse:.2f}")
     print(f"R²:  {r2:.4f}")
 
+def run_logistic_regression(daily_df):
+    median = daily_df["count"].median()
+    daily_df["high_activity"] = (daily_df["count"] > median).astype(int)
+
+    X = daily_df[["taken_weekday", "taken_month"]]
+    y = daily_df["high_activity"]
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+    model = LogisticRegression()
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+
+    print("\n--- Logistic Regression: High vs Low Activity Day ---")
+    print(f"Median photos/day threshold: {median}")
+    print(f"Accuracy: {accuracy_score(y_test, y_pred):.4f}")
+    print(classification_report(y_test, y_pred, target_names=["low", "high"]))
+
 if __name__ == "__main__":
-    df = load_monthly_counts()
+    monthly_df = load_monthly_counts()
     print("Monthly photo counts:")
-    print(df.to_string(index=False))
-    print(f"\nTotal months in dataset: {len(df)}")
-    run_linear_regression(df)
+    print(monthly_df.to_string(index=False))
+    print(f"\nTotal months in dataset: {len(monthly_df)}")
+    run_linear_regression(monthly_df)
+
+    daily_df = load_daily_counts()
+    run_logistic_regression(daily_df)
