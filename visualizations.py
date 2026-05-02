@@ -54,7 +54,22 @@ def plot_hourly_distribution(df):
     plt.close()
     print("Saved hourly_distribution.png")
 
+def plot_weekday_distribution(df):
+    day_names = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    counts = df.groupby("taken_weekday").size().reindex(range(7), fill_value=0)
+
+    plt.figure(figsize=(8, 4))
+    plt.bar(day_names, counts.values)
+    plt.xlabel("Day of Week")
+    plt.ylabel("Number of Photos")
+    plt.title("Photo Count by Day of Week")
+    plt.tight_layout()
+    plt.savefig(os.path.join(PLOTS_DIR, "weekday_distribution.png"))
+    plt.close()
+    print("Saved weekday_distribution.png")
+
 if __name__ == "__main__":
     df = load_data()
     plot_monthly_trend(df)
     plot_hourly_distribution(df)
+    plot_weekday_distribution(df)
