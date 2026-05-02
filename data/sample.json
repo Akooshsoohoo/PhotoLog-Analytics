@@ -1,10 +1,20 @@
 {
+  "title": "IMG_0001.jpg",
   "photoTakenTime": {
-    "timestamp": "1672531200"
+    "timestamp": "1672531200",
+    "formatted": "Jan 1, 2023, 12:00:00 AM UTC"
   },
   "creationTime": {
-    "timestamp": "1672531200"
+    "timestamp": "1672531200",
+    "formatted": "Jan 1, 2023, 12:00:00 AM UTC"
   },
-  "originalFilename": "IMG_0001.jpg",
-  "mimeType": "image/jpeg"
+  "geoData": {
+    "latitude": 0.0,
+    "longitude": 0.0
+  },
+  "googlePhotosOrigin": {
+    "mobileUpload": {
+      "deviceType": "IOS_PHONE"
+    }
+  }
 }

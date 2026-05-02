@@ -13,9 +13,9 @@ def main():
             with open(path, "r") as f:
                 data = json.load(f)  
 
-            filename = data["originalFilename"]
+            filename = data["title"]
             timestamp = data["photoTakenTime"]["timestamp"]
-            file_type = data["mimeType"]
+            file_type = data.get("mimeType", "unknown")
 
             photo_record = {
                 "filename": filename,
