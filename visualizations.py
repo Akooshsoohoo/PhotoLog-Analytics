@@ -68,8 +68,20 @@ def plot_weekday_distribution(df):
     plt.close()
     print("Saved weekday_distribution.png")
 
+def plot_media_type_pie(df):
+    counts = df["media_type"].value_counts()
+
+    plt.figure(figsize=(6, 6))
+    plt.pie(counts.values, labels=counts.index, autopct="%1.1f%%", startangle=90)
+    plt.title("Photo vs Video Breakdown")
+    plt.tight_layout()
+    plt.savefig(os.path.join(PLOTS_DIR, "media_type_breakdown.png"))
+    plt.close()
+    print("Saved media_type_breakdown.png")
+
 if __name__ == "__main__":
     df = load_data()
     plot_monthly_trend(df)
     plot_hourly_distribution(df)
     plot_weekday_distribution(df)
+    plot_media_type_pie(df)
