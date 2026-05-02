@@ -40,6 +40,21 @@ def plot_monthly_trend(df):
     plt.close()
     print("Saved monthly_trend.png")
 
+def plot_hourly_distribution(df):
+    hour_counts = df.groupby("taken_hour").size().reindex(range(24), fill_value=0)
+
+    plt.figure(figsize=(10, 4))
+    plt.bar(range(24), hour_counts.values)
+    plt.xlabel("Hour of Day (UTC)")
+    plt.ylabel("Number of Photos")
+    plt.title("Photo Activity by Hour of Day")
+    plt.xticks(range(24))
+    plt.tight_layout()
+    plt.savefig(os.path.join(PLOTS_DIR, "hourly_distribution.png"))
+    plt.close()
+    print("Saved hourly_distribution.png")
+
 if __name__ == "__main__":
     df = load_data()
     plot_monthly_trend(df)
+    plot_hourly_distribution(df)
