@@ -18,9 +18,19 @@ def extract_time_features(df):
     df["taken_hour"] = df["dt"].dt.hour
     return df
 
+def drop_bad_rows(df):
+    before = len(df)
+    df = df[df["photo_taken_ts"] > 0]
+    df = df.dropna(subset=["photo_taken_ts"])
+    df = df.drop_duplicates(subset=["title", "photo_taken_ts"])
+    after = len(df)
+    print(f"Dropped {before - after} rows (nulls + duplicates), {after} remaining")
+    return df
+
 if __name__ == "__main__":
     df = load_from_db()
     print(f"Loaded {len(df)} rows")
 
     df = extract_time_features(df)
+    df = drop_bad_rows(df)
     print(df[["title", "photo_taken_ts", "taken_year", "taken_month", "taken_hour"]].head())
