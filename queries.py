@@ -17,6 +17,22 @@ def main():
     run_query(conn, "Photo vs video breakdown",
         "SELECT media_type, COUNT(*) as count FROM photos GROUP BY media_type")
 
+    run_query(conn, "Most active month (overall)",
+        """SELECT taken_month, COUNT(*) as count FROM photos
+           WHERE taken_month IS NOT NULL
+           GROUP BY taken_month ORDER BY count DESC LIMIT 5""")
+
+    run_query(conn, "Most common hour of day",
+        """SELECT taken_hour, COUNT(*) as count FROM photos
+           WHERE taken_hour IS NOT NULL
+           GROUP BY taken_hour ORDER BY count DESC LIMIT 5""")
+
+    run_query(conn, "Average photos per weekday",
+        """SELECT taken_weekday,
+                  ROUND(COUNT(*) * 1.0 / COUNT(DISTINCT taken_year || '-' || taken_month || '-' || taken_day), 2) as avg_per_day
+           FROM photos WHERE taken_weekday IS NOT NULL
+           GROUP BY taken_weekday ORDER BY taken_weekday""")
+
     conn.close()
 
 if __name__ == "__main__":
