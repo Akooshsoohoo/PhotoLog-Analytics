@@ -30,6 +30,10 @@ def parse_record(data):
     return (title, photo_taken_ts, None, None, None, None, None, device_type, media_type, ext, has_geo)
 
 def load_into_db(records):
+    # remove old db so we start fresh each run
+    if os.path.exists(DB_PATH):
+        os.remove(DB_PATH)
+
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
