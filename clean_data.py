@@ -44,6 +44,16 @@ def drop_bad_rows(df):
     print(f"Dropped {before - after} rows (nulls + duplicates), {after} remaining")
     return df
 
+def flag_burst_days(daily_df):
+    q1 = daily_df["total_count"].quantile(0.25)
+    q3 = daily_df["total_count"].quantile(0.75)
+    iqr = q3 - q1
+    threshold = q3 + 1.5 * iqr
+    daily_df["burst_day"] = (daily_df["total_count"] > threshold).astype(int)
+    burst_count = daily_df["burst_day"].sum()
+    print(f"Flagged {burst_count} burst days (IQR threshold: {threshold:.1f} photos/day)")
+    return daily_df
+
 def populate_daily_summary(df):
     daily = df.groupby(["taken_year", "taken_month", "taken_day", "taken_weekday"]).agg(
         total_count=("title", "count"),
