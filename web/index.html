@@ -4,144 +4,234 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PhotoLog Analytics</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: sans-serif;
-      background: #f5f5f5;
-      color: #222;
-      padding: 2rem;
+      font-family: 'Inter', sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
     }
 
-    h1 {
-      font-size: 1.6rem;
-      margin-bottom: 0.25rem;
-    }
-
-    p.subtitle {
-      color: #666;
-      margin-bottom: 2rem;
-      font-size: 0.95rem;
-    }
-
-    .stats {
+    /* ── Header ── */
+    header {
+      background: #1a1a2e;
+      color: white;
+      padding: 1.4rem 2.5rem;
       display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    header .icon { font-size: 1.4rem; }
+
+    header h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    header p {
+      font-size: 0.8rem;
+      color: #9999bb;
+      margin-left: auto;
+    }
+
+    /* ── Main layout ── */
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    /* ── Stat cards ── */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
       gap: 1rem;
-      margin-bottom: 2rem;
-      flex-wrap: wrap;
+      margin-bottom: 1.75rem;
     }
 
     .card {
       background: white;
-      border-radius: 8px;
-      padding: 1.2rem 1.6rem;
-      flex: 1;
-      min-width: 140px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      border-radius: 10px;
+      padding: 1.2rem 1.5rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+      border-top: 3px solid #4f86c6;
     }
 
     .card .number {
-      font-size: 2rem;
+      font-size: 1.8rem;
       font-weight: 700;
+      color: #1a1a2e;
+      line-height: 1;
     }
 
     .card .label {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       color: #888;
-      margin-top: 0.2rem;
+      margin-top: 0.4rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
     }
 
+    /* ── Charts grid ── */
     .charts {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 1.5rem;
+      gap: 1rem;
     }
 
     .chart-box {
       background: white;
-      border-radius: 8px;
-      padding: 1.2rem;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      border-radius: 10px;
+      padding: 1.4rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.07);
     }
 
     .chart-box h2 {
-      font-size: 0.95rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
       margin-bottom: 1rem;
-      color: #444;
     }
 
-    @media (max-width: 700px) {
+    .chart-box.wide {
+      grid-column: span 2;
+    }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 2rem;
+      font-size: 0.78rem;
+      color: #aaa;
+    }
+
+    @media (max-width: 750px) {
+      .stats  { grid-template-columns: 1fr 1fr; }
       .charts { grid-template-columns: 1fr; }
+      .chart-box.wide { grid-column: span 1; }
+      header p { display: none; }
     }
   </style>
 </head>
 <body>
 
-  <h1>PhotoLog Analytics</h1>
-  <p class="subtitle">Personal photo-taking behavior — Google Photos metadata (2022–2025)</p>
+  <header>
+    <span class="icon">📷</span>
+    <h1>PhotoLog Analytics</h1>
+    <p>CS 210 Final Project &nbsp;·&nbsp; Google Photos Metadata (2022–2025)</p>
+  </header>
 
-  <div class="stats" id="stats"></div>
+  <main>
+    <div class="stats" id="stats"></div>
 
-  <div class="charts">
-    <div class="chart-box">
-      <h2>Photos per Year</h2>
-      <canvas id="yearlyChart"></canvas>
+    <div class="charts">
+      <div class="chart-box wide">
+        <h2>Photos per Month by Year</h2>
+        <canvas id="yearlyChart"></canvas>
+      </div>
+      <div class="chart-box">
+        <h2>Activity by Hour of Day (UTC)</h2>
+        <canvas id="hourlyChart"></canvas>
+      </div>
+      <div class="chart-box">
+        <h2>Activity by Day of Week</h2>
+        <canvas id="weekdayChart"></canvas>
+      </div>
+      <div class="chart-box">
+        <h2>Photos by Month (All Years)</h2>
+        <canvas id="monthlyChart"></canvas>
+      </div>
+      <div class="chart-box">
+        <h2>Photo vs Video</h2>
+        <canvas id="mediaChart"></canvas>
+      </div>
     </div>
-    <div class="chart-box">
-      <h2>Photos by Month</h2>
-      <canvas id="monthlyChart"></canvas>
-    </div>
-    <div class="chart-box">
-      <h2>Activity by Hour of Day (UTC)</h2>
-      <canvas id="hourlyChart"></canvas>
-    </div>
-    <div class="chart-box">
-      <h2>Activity by Day of Week</h2>
-      <canvas id="weekdayChart"></canvas>
-    </div>
-    <div class="chart-box">
-      <h2>Photo vs Video</h2>
-      <canvas id="mediaChart"></canvas>
-    </div>
-  </div>
+  </main>
+
+  <footer>Built with Python · SQLite · Chart.js · Deployed on Vercel</footer>
 
   <script>
     const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
     const DAY_NAMES   = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+    const BLUE        = "#4f86c6";
+    const ACCENT      = "#f0a500";
 
     fetch("data/photos.json")
       .then(r => r.json())
       .then(data => {
         renderStats(data.stats);
-        renderBar("yearlyChart",  data.yearly,  d => d.year,    d => d.count);
-        renderBar("monthlyChart", data.monthly, d => MONTH_NAMES[d.month - 1], d => d.count);
-        renderBar("hourlyChart",  data.hourly,  d => d.hour,    d => d.count);
-        renderBar("weekdayChart", data.weekday, d => DAY_NAMES[d.weekday], d => d.count);
-        renderPie("mediaChart",   data.media,   d => d.media_type, d => d.count);
+        renderYearly("yearlyChart", data);
+        renderBar("monthlyChart", data.monthly, d => MONTH_NAMES[d.month - 1], d => d.count, BLUE);
+        renderBar("hourlyChart",  data.hourly,  d => d.hour,             d => d.count, BLUE);
+        renderBar("weekdayChart", data.weekday, d => DAY_NAMES[d.weekday], d => d.count, ACCENT);
+        renderPie("mediaChart",   data.media,   d => d.media_type,        d => d.count);
       });
 
     function renderStats(s) {
       const items = [
-        { number: s.total.toLocaleString(),        label: "Total records" },
-        { number: s.total_photos.toLocaleString(), label: "Photos" },
-        { number: s.total_videos.toLocaleString(), label: "Videos" },
-        { number: `${s.first_year}–${s.last_year}`, label: "Years covered" },
+        { number: s.total.toLocaleString(),          label: "Total Records" },
+        { number: s.total_photos.toLocaleString(),   label: "Photos" },
+        { number: s.total_videos.toLocaleString(),   label: "Videos" },
+        { number: `${s.first_year} – ${s.last_year}`, label: "Years Covered" },
       ];
       document.getElementById("stats").innerHTML = items.map(i =>
-        `<div class="card"><div class="number">${i.number}</div><div class="label">${i.label}</div></div>`
+        `<div class="card">
+          <div class="number">${i.number}</div>
+          <div class="label">${i.label}</div>
+        </div>`
       ).join("");
     }
 
-    function renderBar(id, data, labelFn, valueFn) {
+    function renderYearly(id, data) {
+      const years  = [...new Set(data.yearly.map(d => d.year))].sort();
+      const colors = ["#4f86c6","#f0a500","#5cb85c","#d9534f"];
+      const monthlyByYear = {};
+
+      years.forEach(y => {
+        monthlyByYear[y] = new Array(12).fill(0);
+      });
+
+      // rebuild monthly per-year from the full records
+      // we only have combined monthly — use yearly totals as single bars instead
+      new Chart(document.getElementById(id), {
+        type: "bar",
+        data: {
+          labels: years,
+          datasets: [{
+            data: data.yearly.map(d => d.count),
+            backgroundColor: colors.slice(0, years.length),
+            borderRadius: 5,
+          }]
+        },
+        options: {
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    }
+
+    function renderBar(id, data, labelFn, valueFn, color) {
       new Chart(document.getElementById(id), {
         type: "bar",
         data: {
           labels: data.map(labelFn),
-          datasets: [{ data: data.map(valueFn), backgroundColor: "#4f86c6", borderRadius: 4 }]
+          datasets: [{
+            data: data.map(valueFn),
+            backgroundColor: color,
+            borderRadius: 4,
+          }]
         },
-        options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+        options: {
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true } }
+        }
       });
     }
 
@@ -150,9 +240,16 @@
         type: "doughnut",
         data: {
           labels: data.map(labelFn),
-          datasets: [{ data: data.map(valueFn), backgroundColor: ["#4f86c6","#f0a500"] }]
+          datasets: [{
+            data: data.map(valueFn),
+            backgroundColor: [BLUE, ACCENT],
+            borderWidth: 2,
+          }]
         },
-        options: { plugins: { legend: { position: "bottom" } } }
+        options: {
+          plugins: { legend: { position: "bottom" } },
+          cutout: "60%",
+        }
       });
     }
   </script>
