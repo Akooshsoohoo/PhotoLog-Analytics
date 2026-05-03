@@ -15,3 +15,15 @@ CREATE TABLE IF NOT EXISTS photos (
 
 CREATE INDEX IF NOT EXISTS idx_taken_year ON photos (taken_year);
 CREATE INDEX IF NOT EXISTS idx_taken_month ON photos (taken_month);
+
+CREATE TABLE IF NOT EXISTS daily_summary (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    taken_year INTEGER NOT NULL,
+    taken_month INTEGER NOT NULL,
+    taken_day INTEGER NOT NULL,
+    taken_weekday INTEGER NOT NULL,
+    total_count INTEGER NOT NULL,
+    photo_count INTEGER NOT NULL,
+    video_count INTEGER NOT NULL,
+    burst_day INTEGER DEFAULT 0
+);
