@@ -33,6 +33,13 @@ def main():
            FROM photos WHERE taken_weekday IS NOT NULL
            GROUP BY taken_weekday ORDER BY taken_weekday""")
 
+    run_query(conn, "Days with above-average photo count",
+        """SELECT taken_year, taken_month, taken_day, total_count
+           FROM daily_summary
+           WHERE total_count > (SELECT AVG(total_count) FROM daily_summary)
+           ORDER BY total_count DESC
+           LIMIT 10""")
+
     run_query(conn, "Top month per year (subquery)",
         """SELECT taken_year, taken_month, count FROM (
                SELECT taken_year, taken_month, COUNT(*) as count,
