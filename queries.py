@@ -33,6 +33,11 @@ def main():
            FROM photos WHERE taken_weekday IS NOT NULL
            GROUP BY taken_weekday ORDER BY taken_weekday""")
 
+    run_query(conn, "Burst days by year",
+        """SELECT taken_year, COUNT(*) as burst_days
+           FROM daily_summary WHERE burst_day = 1
+           GROUP BY taken_year ORDER BY taken_year""")
+
     run_query(conn, "Year-over-year photo count change",
         """SELECT curr.taken_year,
                   curr.count as this_year,
