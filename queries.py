@@ -33,6 +33,19 @@ def main():
            FROM photos WHERE taken_weekday IS NOT NULL
            GROUP BY taken_weekday ORDER BY taken_weekday""")
 
+    run_query(conn, "Daily summary joined with photo details (top 5 busiest days)",
+        """SELECT d.taken_year, d.taken_month, d.taken_day,
+                  d.total_count, d.photo_count, d.video_count,
+                  p.device_type
+           FROM daily_summary d
+           JOIN photos p
+             ON d.taken_year = p.taken_year
+            AND d.taken_month = p.taken_month
+            AND d.taken_day = p.taken_day
+           GROUP BY d.taken_year, d.taken_month, d.taken_day
+           ORDER BY d.total_count DESC
+           LIMIT 5""")
+
     conn.close()
 
 if __name__ == "__main__":
