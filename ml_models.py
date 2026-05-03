@@ -49,6 +49,14 @@ def run_linear_regression(df):
     print(f"MSE: {mse:.2f}")
     print(f"R²:  {r2:.4f}")
 
+def show_correlations(daily_df):
+    features = ["taken_weekday", "taken_month", "taken_year", "count"]
+    corr = daily_df[features].corr()["count"].drop("count")
+
+    print("\n--- Feature Correlation with Daily Photo Count ---")
+    for feat, val in corr.items():
+        print(f"  {feat:<20} {val:+.4f}")
+
 def run_logistic_regression(daily_df):
     median = daily_df["count"].median()
     daily_df["high_activity"] = (daily_df["count"] > median).astype(int)
@@ -75,4 +83,5 @@ if __name__ == "__main__":
     run_linear_regression(monthly_df)
 
     daily_df = load_daily_counts()
+    show_correlations(daily_df)
     run_logistic_regression(daily_df)
