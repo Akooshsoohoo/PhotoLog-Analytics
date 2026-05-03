@@ -147,9 +147,15 @@
   <p class="section-title">Activity Patterns</p>
   <div class="charts">
 
-    <div class="chart-box wide">
-      <h2>Total Photos per Year with Year-over-Year Change</h2>
+    <div class="chart-box">
+      <h2>Total Photos per Year</h2>
+      <canvas id="yearlyChart"></canvas>
+    </div>
+
+    <div class="chart-box">
+      <h2>Year-over-Year Change (%)</h2>
       <canvas id="yoyChart"></canvas>
+      <p class="note">Excludes 2022 (no prior year to compare)</p>
     </div>
 
     <div class="chart-box">
@@ -210,6 +216,7 @@
     .then(data => {
       renderStats(data.stats, data);
       renderInsights(data);
+      renderBar("yearlyChart", data.yoy, d => d.year, d => d.this_year, BLUE);
       renderYoY("yoyChart", data);
       renderBar("monthlyChart", data.monthly, d => MONTH_NAMES[d.month - 1], d => d.count, BLUE);
       renderBar("hourlyChart",  data.hourly,  d => d.hour,                   d => d.count, BLUE);
@@ -271,42 +278,23 @@
   }
 
   function renderYoY(id, data) {
-    const labels  = data.yoy.map(d => d.year);
-    const counts  = data.yoy.map(d => d.this_year);
-    const changes = data.yoy.map(d => d.pct_change);
+    const filtered = data.yoy.filter(d => d.pct_change !== null);
+    const colors   = filtered.map(d => d.pct_change >= 0 ? GREEN : RED);
 
     new Chart(document.getElementById(id), {
       type: "bar",
       data: {
-        labels,
-        datasets: [
-          {
-            type: "bar",
-            label: "Total Photos",
-            data: counts,
-            backgroundColor: BLUE,
-            borderRadius: 5,
-            yAxisID: "y",
-          },
-          {
-            type: "line",
-            label: "YoY Change (%)",
-            data: changes,
-            borderColor: ORANGE,
-            backgroundColor: "transparent",
-            pointBackgroundColor: ORANGE,
-            pointRadius: 5,
-            tension: 0.3,
-            yAxisID: "y2",
-          }
-        ]
+        labels: filtered.map(d => d.year),
+        datasets: [{
+          data: filtered.map(d => d.pct_change),
+          backgroundColor: colors,
+          borderRadius: 4,
+        }]
       },
       options: {
-        plugins: { legend: { position: "top" } },
+        plugins: { legend: { display: false } },
         scales: {
-          y:  { beginAtZero: true, title: { display: true, text: "Photo Count" } },
-          y2: { position: "right", title: { display: true, text: "YoY Change (%)" },
-                grid: { drawOnChartArea: false } }
+          y: { title: { display: true, text: "% Change" } }
         }
       }
     });

@@ -7,6 +7,7 @@ import clean_data
 import queries
 import visualizations
 import ml_models
+import export_json
 
 def main():
     print("=== Step 1: Parsing Takeout JSON files ===")
@@ -33,6 +34,9 @@ def main():
     ml_models.run_linear_regression(monthly_df)
     daily_df = ml_models.load_daily_counts()
     ml_models.run_logistic_regression(daily_df)
+
+    print("\n=== Step 6: Exporting data for web dashboard ===")
+    export_json.main()
 
     print("\n=== Done ===")
 
