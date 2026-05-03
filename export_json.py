@@ -49,6 +49,27 @@ def main():
         FROM photos GROUP BY media_type
     """)
 
+    # burst days per year
+    burst = query(conn, """
+        SELECT taken_year as year, COUNT(*) as burst_days
+        FROM daily_summary WHERE burst_day = 1
+        GROUP BY taken_year ORDER BY taken_year
+    """)
+
+    # year-over-year change
+    yoy = query(conn, """
+        SELECT curr.taken_year as year,
+               curr.count as this_year,
+               prev.count as last_year,
+               ROUND((curr.count - prev.count) * 100.0 / prev.count, 1) as pct_change
+        FROM (SELECT taken_year, COUNT(*) as count FROM photos
+              WHERE taken_year IS NOT NULL GROUP BY taken_year) curr
+        LEFT JOIN (SELECT taken_year, COUNT(*) as count FROM photos
+                   WHERE taken_year IS NOT NULL GROUP BY taken_year) prev
+          ON curr.taken_year = prev.taken_year + 1
+        ORDER BY curr.taken_year
+    """)
+
     # summary stats
     stats = query(conn, """
         SELECT
@@ -68,6 +89,8 @@ def main():
         "hourly": hourly,
         "weekday": weekday,
         "media": media,
+        "burst": burst,
+        "yoy": yoy,
         "stats": stats,
     }
 

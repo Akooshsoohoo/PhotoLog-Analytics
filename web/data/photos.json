@@ -177,6 +177,50 @@
       "count": 436
     }
   ],
+  "burst": [
+    {
+      "year": 2022,
+      "burst_days": 9
+    },
+    {
+      "year": 2023,
+      "burst_days": 3
+    },
+    {
+      "year": 2024,
+      "burst_days": 3
+    },
+    {
+      "year": 2025,
+      "burst_days": 7
+    }
+  ],
+  "yoy": [
+    {
+      "year": 2022,
+      "this_year": 927,
+      "last_year": null,
+      "pct_change": null
+    },
+    {
+      "year": 2023,
+      "this_year": 461,
+      "last_year": 927,
+      "pct_change": -50.3
+    },
+    {
+      "year": 2024,
+      "this_year": 705,
+      "last_year": 461,
+      "pct_change": 52.9
+    },
+    {
+      "year": 2025,
+      "this_year": 941,
+      "last_year": 705,
+      "pct_change": 33.5
+    }
+  ],
   "stats": {
     "total": 3034,
     "total_photos": 2600,
