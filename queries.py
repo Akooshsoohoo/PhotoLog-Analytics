@@ -33,6 +33,18 @@ def main():
            FROM photos WHERE taken_weekday IS NOT NULL
            GROUP BY taken_weekday ORDER BY taken_weekday""")
 
+    run_query(conn, "Year-over-year photo count change",
+        """SELECT curr.taken_year,
+                  curr.count as this_year,
+                  prev.count as last_year,
+                  ROUND((curr.count - prev.count) * 100.0 / prev.count, 1) as pct_change
+           FROM (SELECT taken_year, COUNT(*) as count FROM photos
+                 WHERE taken_year IS NOT NULL GROUP BY taken_year) curr
+           LEFT JOIN (SELECT taken_year, COUNT(*) as count FROM photos
+                      WHERE taken_year IS NOT NULL GROUP BY taken_year) prev
+             ON curr.taken_year = prev.taken_year + 1
+           ORDER BY curr.taken_year""")
+
     run_query(conn, "Days with above-average photo count",
         """SELECT taken_year, taken_month, taken_day, total_count
            FROM daily_summary
