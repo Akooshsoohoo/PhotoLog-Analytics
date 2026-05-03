@@ -33,6 +33,15 @@ def main():
            FROM photos WHERE taken_weekday IS NOT NULL
            GROUP BY taken_weekday ORDER BY taken_weekday""")
 
+    run_query(conn, "Top month per year (subquery)",
+        """SELECT taken_year, taken_month, count FROM (
+               SELECT taken_year, taken_month, COUNT(*) as count,
+                      RANK() OVER (PARTITION BY taken_year ORDER BY COUNT(*) DESC) as rnk
+               FROM photos WHERE taken_year IS NOT NULL
+               GROUP BY taken_year, taken_month
+           ) WHERE rnk = 1
+           ORDER BY taken_year""")
+
     run_query(conn, "Daily summary joined with photo details (top 5 busiest days)",
         """SELECT d.taken_year, d.taken_month, d.taken_day,
                   d.total_count, d.photo_count, d.video_count,
