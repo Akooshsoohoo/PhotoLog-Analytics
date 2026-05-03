@@ -61,6 +61,8 @@ def populate_daily_summary(df):
         video_count=("media_type", lambda x: (x == "video").sum()),
     ).reset_index()
 
+    daily = flag_burst_days(daily)
+
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("DELETE FROM daily_summary")
@@ -69,11 +71,11 @@ def populate_daily_summary(df):
         cursor.execute("""
             INSERT INTO daily_summary
                 (taken_year, taken_month, taken_day, taken_weekday,
-                 total_count, photo_count, video_count)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+                 total_count, photo_count, video_count, burst_day)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """, (int(row["taken_year"]), int(row["taken_month"]), int(row["taken_day"]),
               int(row["taken_weekday"]), int(row["total_count"]),
-              int(row["photo_count"]), int(row["video_count"])))
+              int(row["photo_count"]), int(row["video_count"]), int(row["burst_day"])))
 
     conn.commit()
     conn.close()
