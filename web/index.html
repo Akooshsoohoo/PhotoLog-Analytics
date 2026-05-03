@@ -15,7 +15,6 @@
       color: #1a1a2e;
     }
 
-    /* ── Header ── */
     header {
       background: #1a1a2e;
       color: white;
@@ -24,235 +23,353 @@
       align-items: center;
       gap: 0.75rem;
     }
-
     header .icon { font-size: 1.4rem; }
+    header h1 { font-size: 1.25rem; font-weight: 600; letter-spacing: -0.02em; }
+    header p  { font-size: 0.8rem; color: #9999bb; margin-left: auto; }
 
-    header h1 {
-      font-size: 1.25rem;
-      font-weight: 600;
-      letter-spacing: -0.02em;
-    }
-
-    header p {
-      font-size: 0.8rem;
-      color: #9999bb;
-      margin-left: auto;
-    }
-
-    /* ── Main layout ── */
     main {
       max-width: 1100px;
       margin: 0 auto;
       padding: 2rem 1.5rem;
     }
 
-    /* ── Stat cards ── */
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 1rem;
-      margin-bottom: 1.75rem;
+    /* section labels */
+    .section-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #aaa;
+      margin: 2rem 0 0.75rem;
     }
 
+    /* stat cards */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1rem;
+      margin-bottom: 0.25rem;
+    }
     .card {
       background: white;
       border-radius: 10px;
-      padding: 1.2rem 1.5rem;
+      padding: 1.1rem 1.3rem;
       box-shadow: 0 1px 3px rgba(0,0,0,0.07);
       border-top: 3px solid #4f86c6;
     }
+    .card.orange { border-top-color: #f0a500; }
+    .card.green  { border-top-color: #5cb85c; }
+    .card .number { font-size: 1.7rem; font-weight: 700; line-height: 1; }
+    .card .label  { font-size: 0.72rem; color: #888; margin-top: 0.35rem;
+                    text-transform: uppercase; letter-spacing: 0.04em; }
+    .card .sub    { font-size: 0.72rem; color: #aaa; margin-top: 0.2rem; }
 
-    .card .number {
-      font-size: 1.8rem;
-      font-weight: 700;
-      color: #1a1a2e;
-      line-height: 1;
-    }
-
-    .card .label {
-      font-size: 0.75rem;
-      color: #888;
-      margin-top: 0.4rem;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-    }
-
-    /* ── Charts grid ── */
+    /* chart grid */
     .charts {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 1rem;
     }
-
     .chart-box {
       background: white;
       border-radius: 10px;
       padding: 1.4rem;
       box-shadow: 0 1px 3px rgba(0,0,0,0.07);
     }
-
+    .chart-box.wide { grid-column: span 2; }
     .chart-box h2 {
-      font-size: 0.82rem;
+      font-size: 0.78rem;
       font-weight: 600;
       color: #555;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.06em;
       margin-bottom: 1rem;
     }
-
-    .chart-box.wide {
-      grid-column: span 2;
+    .chart-box .note {
+      font-size: 0.72rem;
+      color: #aaa;
+      margin-top: 0.75rem;
     }
 
-    /* ── Footer ── */
+    /* insight strip */
+    .insights {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+    .insight {
+      background: white;
+      border-radius: 10px;
+      padding: 1.1rem 1.3rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+      border-left: 4px solid #4f86c6;
+    }
+    .insight.orange { border-left-color: #f0a500; }
+    .insight.green  { border-left-color: #5cb85c; }
+    .insight .value { font-size: 1.4rem; font-weight: 700; }
+    .insight .desc  { font-size: 0.78rem; color: #666; margin-top: 0.3rem; line-height: 1.4; }
+
     footer {
       text-align: center;
       padding: 2rem;
-      font-size: 0.78rem;
-      color: #aaa;
+      font-size: 0.76rem;
+      color: #bbb;
     }
 
     @media (max-width: 750px) {
-      .stats  { grid-template-columns: 1fr 1fr; }
-      .charts { grid-template-columns: 1fr; }
+      .stats    { grid-template-columns: 1fr 1fr; }
+      .charts   { grid-template-columns: 1fr; }
+      .insights { grid-template-columns: 1fr; }
       .chart-box.wide { grid-column: span 1; }
-      header p { display: none; }
+      header p  { display: none; }
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <span class="icon">📷</span>
-    <h1>PhotoLog Analytics</h1>
-    <p>CS 210 Final Project &nbsp;·&nbsp; Google Photos Metadata (2022–2025)</p>
-  </header>
+<header>
+  <span class="icon">📷</span>
+  <h1>PhotoLog Analytics</h1>
+  <p>CS 210 Final Project &nbsp;·&nbsp; Google Photos Metadata (2022–2025)</p>
+</header>
 
-  <main>
-    <div class="stats" id="stats"></div>
+<main>
 
-    <div class="charts">
-      <div class="chart-box wide">
-        <h2>Photos per Month by Year</h2>
-        <canvas id="yearlyChart"></canvas>
-      </div>
-      <div class="chart-box">
-        <h2>Activity by Hour of Day (UTC)</h2>
-        <canvas id="hourlyChart"></canvas>
-      </div>
-      <div class="chart-box">
-        <h2>Activity by Day of Week</h2>
-        <canvas id="weekdayChart"></canvas>
-      </div>
-      <div class="chart-box">
-        <h2>Photos by Month (All Years)</h2>
-        <canvas id="monthlyChart"></canvas>
-      </div>
-      <div class="chart-box">
-        <h2>Photo vs Video</h2>
-        <canvas id="mediaChart"></canvas>
-      </div>
+  <!-- Stats -->
+  <p class="section-title">Overview</p>
+  <div class="stats" id="stats"></div>
+
+  <!-- Key Insights -->
+  <p class="section-title">Key Insights</p>
+  <div class="insights" id="insights"></div>
+
+  <!-- Activity charts -->
+  <p class="section-title">Activity Patterns</p>
+  <div class="charts">
+
+    <div class="chart-box wide">
+      <h2>Total Photos per Year with Year-over-Year Change</h2>
+      <canvas id="yoyChart"></canvas>
     </div>
-  </main>
 
-  <footer>Built with Python · SQLite · Chart.js · Deployed on Vercel</footer>
+    <div class="chart-box">
+      <h2>Photos by Month (All Years Combined)</h2>
+      <canvas id="monthlyChart"></canvas>
+    </div>
 
-  <script>
-    const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-    const DAY_NAMES   = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-    const BLUE        = "#4f86c6";
-    const ACCENT      = "#f0a500";
+    <div class="chart-box">
+      <h2>Activity by Hour of Day (UTC)</h2>
+      <canvas id="hourlyChart"></canvas>
+      <p class="note">Peak at UTC 22–3 = afternoon/evening Eastern time</p>
+    </div>
 
-    fetch("data/photos.json")
-      .then(r => r.json())
-      .then(data => {
-        renderStats(data.stats);
-        renderYearly("yearlyChart", data);
-        renderBar("monthlyChart", data.monthly, d => MONTH_NAMES[d.month - 1], d => d.count, BLUE);
-        renderBar("hourlyChart",  data.hourly,  d => d.hour,             d => d.count, BLUE);
-        renderBar("weekdayChart", data.weekday, d => DAY_NAMES[d.weekday], d => d.count, ACCENT);
-        renderPie("mediaChart",   data.media,   d => d.media_type,        d => d.count);
-      });
+    <div class="chart-box">
+      <h2>Activity by Day of Week</h2>
+      <canvas id="weekdayChart"></canvas>
+    </div>
 
-    function renderStats(s) {
-      const items = [
-        { number: s.total.toLocaleString(),          label: "Total Records" },
-        { number: s.total_photos.toLocaleString(),   label: "Photos" },
-        { number: s.total_videos.toLocaleString(),   label: "Videos" },
-        { number: `${s.first_year} – ${s.last_year}`, label: "Years Covered" },
-      ];
-      document.getElementById("stats").innerHTML = items.map(i =>
-        `<div class="card">
-          <div class="number">${i.number}</div>
-          <div class="label">${i.label}</div>
-        </div>`
-      ).join("");
-    }
+    <div class="chart-box">
+      <h2>Photo vs Video Breakdown</h2>
+      <canvas id="mediaChart"></canvas>
+    </div>
 
-    function renderYearly(id, data) {
-      const years  = [...new Set(data.yearly.map(d => d.year))].sort();
-      const colors = ["#4f86c6","#f0a500","#5cb85c","#d9534f"];
-      const monthlyByYear = {};
+  </div>
 
-      years.forEach(y => {
-        monthlyByYear[y] = new Array(12).fill(0);
-      });
+  <!-- Outlier / Burst analysis -->
+  <p class="section-title">Outlier Analysis</p>
+  <div class="charts">
 
-      // rebuild monthly per-year from the full records
-      // we only have combined monthly — use yearly totals as single bars instead
-      new Chart(document.getElementById(id), {
-        type: "bar",
-        data: {
-          labels: years,
-          datasets: [{
-            data: data.yearly.map(d => d.count),
-            backgroundColor: colors.slice(0, years.length),
+    <div class="chart-box">
+      <h2>Burst Days per Year (IQR Outlier Detection)</h2>
+      <canvas id="burstChart"></canvas>
+      <p class="note">Days with &gt;25.2 photos flagged as bursts (1.5×IQR above Q3)</p>
+    </div>
+
+    <div class="chart-box">
+      <h2>Feature Correlation with Daily Photo Count</h2>
+      <canvas id="corrChart"></canvas>
+      <p class="note">Month is the strongest predictor; year shows declining trend</p>
+    </div>
+
+  </div>
+
+</main>
+
+<footer>Built with Python · SQLite · Chart.js · Deployed on Vercel</footer>
+
+<script>
+  const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const DAY_NAMES   = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+  const BLUE   = "#4f86c6";
+  const ORANGE = "#f0a500";
+  const GREEN  = "#5cb85c";
+  const RED    = "#d9534f";
+
+  fetch("data/photos.json")
+    .then(r => r.json())
+    .then(data => {
+      renderStats(data.stats, data);
+      renderInsights(data);
+      renderYoY("yoyChart", data);
+      renderBar("monthlyChart", data.monthly, d => MONTH_NAMES[d.month - 1], d => d.count, BLUE);
+      renderBar("hourlyChart",  data.hourly,  d => d.hour,                   d => d.count, BLUE);
+      renderBar("weekdayChart", data.weekday, d => DAY_NAMES[d.weekday],     d => d.count, ORANGE);
+      renderPie("mediaChart",   data.media,   d => d.media_type,             d => d.count);
+      renderBar("burstChart",   data.burst,   d => d.year,                   d => d.burst_days, RED);
+      renderCorr("corrChart");
+    });
+
+  function renderStats(s, data) {
+    const totalBurst = data.burst.reduce((a, b) => a + b.burst_days, 0);
+    const items = [
+      { number: s.total.toLocaleString(),            label: "Total Records",  cls: "" },
+      { number: s.total_photos.toLocaleString(),     label: "Photos",         cls: "" },
+      { number: s.total_videos.toLocaleString(),     label: "Videos",         cls: "orange" },
+      { number: `${s.first_year}–${s.last_year}`,   label: "Years Covered",  cls: "green" },
+      { number: totalBurst,                          label: "Burst Days",     cls: "orange" },
+    ];
+    document.getElementById("stats").innerHTML = items.map(i =>
+      `<div class="card ${i.cls}">
+        <div class="number">${i.number}</div>
+        <div class="label">${i.label}</div>
+      </div>`
+    ).join("");
+  }
+
+  function renderInsights(data) {
+    const peakMonth   = data.monthly.reduce((a, b) => b.count > a.count ? b : a);
+    const peakDay     = data.weekday.reduce((a, b) => b.count > a.count ? b : a);
+    const peakHour    = data.hourly.reduce((a, b)  => b.count > a.count ? b : a);
+    const localHour   = ((peakHour.hour - 5) + 24) % 24;
+    const ampm        = localHour >= 12 ? "PM" : "AM";
+    const h12         = localHour % 12 || 12;
+
+    const items = [
+      {
+        cls: "",
+        value: MONTH_NAMES[peakMonth.month - 1],
+        desc: `Most active month overall with ${peakMonth.count.toLocaleString()} photos — consistent across all four years`
+      },
+      {
+        cls: "orange",
+        value: `${h12}:00 ${ampm} EST`,
+        desc: `Peak photo-taking hour in local time (UTC ${peakHour.hour}:00) — evening activity dominates`
+      },
+      {
+        cls: "green",
+        value: DAY_NAMES[peakDay.weekday],
+        desc: `Most active day of the week with ${peakDay.count.toLocaleString()} total photos across all years`
+      },
+    ];
+
+    document.getElementById("insights").innerHTML = items.map(i =>
+      `<div class="insight ${i.cls}">
+        <div class="value">${i.value}</div>
+        <div class="desc">${i.desc}</div>
+      </div>`
+    ).join("");
+  }
+
+  function renderYoY(id, data) {
+    const labels  = data.yoy.map(d => d.year);
+    const counts  = data.yoy.map(d => d.this_year);
+    const changes = data.yoy.map(d => d.pct_change);
+
+    new Chart(document.getElementById(id), {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [
+          {
+            type: "bar",
+            label: "Total Photos",
+            data: counts,
+            backgroundColor: BLUE,
             borderRadius: 5,
-          }]
-        },
-        options: {
-          plugins: { legend: { display: false } },
-          scales: { y: { beginAtZero: true } }
+            yAxisID: "y",
+          },
+          {
+            type: "line",
+            label: "YoY Change (%)",
+            data: changes,
+            borderColor: ORANGE,
+            backgroundColor: "transparent",
+            pointBackgroundColor: ORANGE,
+            pointRadius: 5,
+            tension: 0.3,
+            yAxisID: "y2",
+          }
+        ]
+      },
+      options: {
+        plugins: { legend: { position: "top" } },
+        scales: {
+          y:  { beginAtZero: true, title: { display: true, text: "Photo Count" } },
+          y2: { position: "right", title: { display: true, text: "YoY Change (%)" },
+                grid: { drawOnChartArea: false } }
         }
-      });
-    }
+      }
+    });
+  }
 
-    function renderBar(id, data, labelFn, valueFn, color) {
-      new Chart(document.getElementById(id), {
-        type: "bar",
-        data: {
-          labels: data.map(labelFn),
-          datasets: [{
-            data: data.map(valueFn),
-            backgroundColor: color,
-            borderRadius: 4,
-          }]
-        },
-        options: {
-          plugins: { legend: { display: false } },
-          scales: { y: { beginAtZero: true } }
-        }
-      });
-    }
+  function renderCorr(id) {
+    const features = ["Weekday", "Month", "Year"];
+    const values   = [0.1295, 0.2665, -0.3313];
+    const colors   = values.map(v => v >= 0 ? BLUE : RED);
 
-    function renderPie(id, data, labelFn, valueFn) {
-      new Chart(document.getElementById(id), {
-        type: "doughnut",
-        data: {
-          labels: data.map(labelFn),
-          datasets: [{
-            data: data.map(valueFn),
-            backgroundColor: [BLUE, ACCENT],
-            borderWidth: 2,
-          }]
-        },
-        options: {
-          plugins: { legend: { position: "bottom" } },
-          cutout: "60%",
+    new Chart(document.getElementById(id), {
+      type: "bar",
+      data: {
+        labels: features,
+        datasets: [{
+          data: values,
+          backgroundColor: colors,
+          borderRadius: 4,
+        }]
+      },
+      options: {
+        indexAxis: "y",
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { min: -0.5, max: 0.5,
+               title: { display: true, text: "Pearson Correlation Coefficient" } }
         }
-      });
-    }
-  </script>
+      }
+    });
+  }
+
+  function renderBar(id, data, labelFn, valueFn, color) {
+    new Chart(document.getElementById(id), {
+      type: "bar",
+      data: {
+        labels: data.map(labelFn),
+        datasets: [{ data: data.map(valueFn), backgroundColor: color, borderRadius: 4 }]
+      },
+      options: {
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  }
+
+  function renderPie(id, data, labelFn, valueFn) {
+    new Chart(document.getElementById(id), {
+      type: "doughnut",
+      data: {
+        labels: data.map(labelFn),
+        datasets: [{
+          data: data.map(valueFn),
+          backgroundColor: [BLUE, ORANGE],
+          borderWidth: 2,
+        }]
+      },
+      options: {
+        plugins: { legend: { position: "bottom" } },
+        cutout: "60%",
+      }
+    });
+  }
+</script>
 
 </body>
 </html>
