@@ -116,6 +116,25 @@
       color: #bbb;
     }
 
+    .filter-row {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin: 2rem 0 0.75rem;
+    }
+    .filter-row .section-title { margin: 0; }
+    .filter-row select {
+      margin-left: auto;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.78rem;
+      padding: 0.3rem 0.6rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background: white;
+      color: #1a1a2e;
+      cursor: pointer;
+    }
+
     @media (max-width: 750px) {
       .stats    { grid-template-columns: 1fr 1fr; }
       .charts   { grid-template-columns: 1fr; }
@@ -144,7 +163,12 @@
   <div class="insights" id="insights"></div>
 
   <!-- Activity charts -->
-  <p class="section-title">Activity Patterns</p>
+  <div class="filter-row">
+    <p class="section-title">Activity Patterns</p>
+    <select id="yearSelect">
+      <option value="all">All Years</option>
+    </select>
+  </div>
   <div class="charts">
 
     <div class="chart-box">
@@ -211,20 +235,59 @@
   const GREEN  = "#5cb85c";
   const RED    = "#d9534f";
 
+  let charts = {};
+
   fetch("data/photos.json")
     .then(r => r.json())
     .then(data => {
+      // populate year dropdown
+      const sel = document.getElementById("yearSelect");
+      Object.keys(data.by_year).sort().forEach(yr => {
+        const opt = document.createElement("option");
+        opt.value = yr;
+        opt.textContent = yr;
+        sel.appendChild(opt);
+      });
+
       renderStats(data.stats, data);
       renderInsights(data);
       renderBar("yearlyChart", data.yoy, d => d.year, d => d.this_year, BLUE);
       renderYoY("yoyChart", data);
-      renderBar("monthlyChart", data.monthly, d => MONTH_NAMES[d.month - 1], d => d.count, BLUE);
-      renderBar("hourlyChart",  data.hourly,  d => d.hour,                   d => d.count, BLUE);
-      renderBar("weekdayChart", data.weekday, d => DAY_NAMES[d.weekday],     d => d.count, ORANGE);
-      renderPie("mediaChart",   data.media,   d => d.media_type,             d => d.count);
-      renderBar("burstChart",   data.burst,   d => d.year,                   d => d.burst_days, RED);
+      renderPie("mediaChart", data.media, d => d.media_type, d => d.count);
+      renderBar("burstChart", data.burst, d => d.year, d => d.burst_days, RED);
       renderCorr("corrChart");
+      renderFiltered(data, "all");
+
+      sel.addEventListener("change", () => renderFiltered(data, sel.value));
     });
+
+  function renderFiltered(data, year) {
+    const monthly = year === "all" ? data.monthly : data.by_year[year].monthly;
+    const hourly  = year === "all" ? data.hourly  : data.by_year[year].hourly;
+    const weekday = year === "all" ? data.weekday  : data.by_year[year].weekday;
+
+    // pad hourly and weekday so missing hours/days show as 0
+    const hourlyFull = Array.from({length: 24}, (_, i) => {
+      const found = hourly.find(d => d.hour === i);
+      return { hour: i, count: found ? found.count : 0 };
+    });
+    const weekdayFull = Array.from({length: 7}, (_, i) => {
+      const found = weekday.find(d => d.weekday === i);
+      return { weekday: i, count: found ? found.count : 0 };
+    });
+    const monthlyFull = Array.from({length: 12}, (_, i) => {
+      const found = monthly.find(d => d.month === i + 1);
+      return { month: i + 1, count: found ? found.count : 0 };
+    });
+
+    if (charts.monthly) charts.monthly.destroy();
+    if (charts.hourly)  charts.hourly.destroy();
+    if (charts.weekday) charts.weekday.destroy();
+
+    charts.monthly = renderBar("monthlyChart", monthlyFull, d => MONTH_NAMES[d.month - 1], d => d.count, BLUE);
+    charts.hourly  = renderBar("hourlyChart",  hourlyFull,  d => d.hour,                   d => d.count, BLUE);
+    charts.weekday = renderBar("weekdayChart", weekdayFull, d => DAY_NAMES[d.weekday],      d => d.count, ORANGE);
+  }
 
   function renderStats(s, data) {
     const totalBurst = data.burst.reduce((a, b) => a + b.burst_days, 0);
@@ -327,7 +390,7 @@
   }
 
   function renderBar(id, data, labelFn, valueFn, color) {
-    new Chart(document.getElementById(id), {
+    return new Chart(document.getElementById(id), {
       type: "bar",
       data: {
         labels: data.map(labelFn),

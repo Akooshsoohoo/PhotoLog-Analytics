@@ -81,6 +81,28 @@ def main():
         FROM photos WHERE taken_year IS NOT NULL
     """)[0]
 
+    # per-year breakdowns for the year filter
+    years = [r["year"] for r in yearly]
+    by_year = {}
+    for yr in years:
+        by_year[str(yr)] = {
+            "monthly": query(conn, f"""
+                SELECT taken_month as month, COUNT(*) as count
+                FROM photos WHERE taken_year = {yr} AND taken_month IS NOT NULL
+                GROUP BY taken_month ORDER BY taken_month
+            """),
+            "hourly": query(conn, f"""
+                SELECT taken_hour as hour, COUNT(*) as count
+                FROM photos WHERE taken_year = {yr} AND taken_hour IS NOT NULL
+                GROUP BY taken_hour ORDER BY taken_hour
+            """),
+            "weekday": query(conn, f"""
+                SELECT taken_weekday as weekday, COUNT(*) as count
+                FROM photos WHERE taken_year = {yr} AND taken_weekday IS NOT NULL
+                GROUP BY taken_weekday ORDER BY taken_weekday
+            """),
+        }
+
     conn.close()
 
     data = {
@@ -92,6 +114,7 @@ def main():
         "burst": burst,
         "yoy": yoy,
         "stats": stats,
+        "by_year": by_year,
     }
 
     out_path = os.path.join(OUT_DIR, "photos.json")
