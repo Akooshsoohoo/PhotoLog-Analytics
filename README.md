@@ -2,7 +2,9 @@
 
 CS 210 Final Project — analyzing personal photo-taking behavior using Google Photos metadata.
 
-**Live demo:** [your-render-url-here]
+**Live demo:** https://photolog-analytics.onrender.com
+
+**GitHub:** https://github.com/Akooshsoohoo/PhotoLog-Analytics
 
 ---
 
