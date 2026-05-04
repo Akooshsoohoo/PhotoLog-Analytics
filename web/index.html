@@ -207,9 +207,15 @@
     </div>
 
     <div class="chart-box">
-      <h2>Activity by Hour of Day (UTC)</h2>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+        <h2 id="hourlyTitle" style="margin-bottom:0;">Activity by Hour of Day (Eastern)</h2>
+        <button id="tzToggle" onclick="toggleTZ()"
+          style="font-family:'Inter',sans-serif;font-size:0.72rem;font-weight:600;padding:0.25rem 0.7rem;
+                 border:1px solid #ccc;border-radius:20px;background:white;color:#555;cursor:pointer;">
+          Show UTC
+        </button>
+      </div>
       <canvas id="hourlyChart"></canvas>
-      <p class="note">Peak at UTC 22–3 = afternoon/evening Eastern time</p>
     </div>
 
     <div class="chart-box">
@@ -257,6 +263,31 @@
   const RED    = "#d9534f";
 
   let charts = {};
+  let useUTC = false;
+  let _lastData = null;
+  let _lastYear = "all";
+
+  function toggleTZ() {
+    useUTC = !useUTC;
+    document.getElementById("tzToggle").textContent = useUTC ? "Show Eastern" : "Show UTC";
+    document.getElementById("hourlyTitle").textContent =
+      "Activity by Hour of Day (" + (useUTC ? "UTC" : "Eastern") + ")";
+    if (_lastData) {
+      renderFiltered(_lastData, _lastYear);
+      renderInsights(_lastData);
+    }
+  }
+
+  function toDisplayHour(utcHour) {
+    // Eastern = UTC - 5; wrap with mod 24
+    return useUTC ? utcHour : (utcHour - 5 + 24) % 24;
+  }
+
+  function formatHour(h) {
+    const ampm = h >= 12 ? "PM" : "AM";
+    const h12  = h % 12 || 12;
+    return `${h12}${ampm}`;
+  }
 
   function showDashboard(data) {
     document.getElementById("uploadScreen").style.display = "none";
@@ -348,31 +379,36 @@
   }
 
   function renderFiltered(data, year) {
+    _lastData = data;
+    _lastYear = year;
+
     const monthly = year === "all" ? data.monthly : data.by_year[year].monthly;
     const hourly  = year === "all" ? data.hourly  : data.by_year[year].hourly;
     const weekday = year === "all" ? data.weekday  : data.by_year[year].weekday;
 
-    // pad hourly and weekday so missing hours/days show as 0
-    const hourlyFull = Array.from({length: 24}, (_, i) => {
-      const found = hourly.find(d => d.hour === i);
-      return { hour: i, count: found ? found.count : 0 };
+    const monthlyFull = Array.from({length: 12}, (_, i) => {
+      const found = monthly.find(d => d.month === i + 1);
+      return { month: i + 1, count: found ? found.count : 0 };
     });
     const weekdayFull = Array.from({length: 7}, (_, i) => {
       const found = weekday.find(d => d.weekday === i);
       return { weekday: i, count: found ? found.count : 0 };
     });
-    const monthlyFull = Array.from({length: 12}, (_, i) => {
-      const found = monthly.find(d => d.month === i + 1);
-      return { month: i + 1, count: found ? found.count : 0 };
+
+    // Build hourly in display timezone order (0–23 in chosen tz)
+    const hourlyDisplay = Array.from({length: 24}, (_, displayHour) => {
+      const utcHour = useUTC ? displayHour : (displayHour + 5) % 24;
+      const found = hourly.find(d => d.hour === utcHour);
+      return { displayHour, count: found ? found.count : 0 };
     });
 
     if (charts.monthly) charts.monthly.destroy();
     if (charts.hourly)  charts.hourly.destroy();
     if (charts.weekday) charts.weekday.destroy();
 
-    charts.monthly = renderBar("monthlyChart", monthlyFull, d => MONTH_NAMES[d.month - 1], d => d.count, BLUE);
-    charts.hourly  = renderBar("hourlyChart",  hourlyFull,  d => d.hour,                   d => d.count, BLUE);
-    charts.weekday = renderBar("weekdayChart", weekdayFull, d => DAY_NAMES[d.weekday],      d => d.count, ORANGE);
+    charts.monthly = renderBar("monthlyChart", monthlyFull,   d => MONTH_NAMES[d.month - 1],  d => d.count, BLUE);
+    charts.hourly  = renderBar("hourlyChart",  hourlyDisplay, d => formatHour(d.displayHour),  d => d.count, BLUE);
+    charts.weekday = renderBar("weekdayChart", weekdayFull,   d => DAY_NAMES[d.weekday],       d => d.count, ORANGE);
   }
 
   function renderStats(s, data) {
@@ -396,9 +432,8 @@
     const peakMonth   = data.monthly.reduce((a, b) => b.count > a.count ? b : a);
     const peakDay     = data.weekday.reduce((a, b) => b.count > a.count ? b : a);
     const peakHour    = data.hourly.reduce((a, b)  => b.count > a.count ? b : a);
-    const localHour   = ((peakHour.hour - 5) + 24) % 24;
-    const ampm        = localHour >= 12 ? "PM" : "AM";
-    const h12         = localHour % 12 || 12;
+    const displayHour = toDisplayHour(peakHour.hour);
+    const tz          = useUTC ? "UTC" : "EST";
 
     const items = [
       {
@@ -408,8 +443,8 @@
       },
       {
         cls: "orange",
-        value: `${h12}:00 ${ampm} EST`,
-        desc: `Peak photo-taking hour in local time (UTC ${peakHour.hour}:00) — evening activity dominates`
+        value: `${formatHour(displayHour)} ${tz}`,
+        desc: `Peak photo-taking hour (${tz}) — evening activity dominates`
       },
       {
         cls: "green",
