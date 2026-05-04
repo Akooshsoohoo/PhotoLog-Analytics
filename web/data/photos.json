@@ -177,24 +177,7 @@
       "count": 436
     }
   ],
-  "burst": [
-    {
-      "year": 2022,
-      "burst_days": 9
-    },
-    {
-      "year": 2023,
-      "burst_days": 3
-    },
-    {
-      "year": 2024,
-      "burst_days": 3
-    },
-    {
-      "year": 2025,
-      "burst_days": 7
-    }
-  ],
+  "burst": [],
   "yoy": [
     {
       "year": 2022,

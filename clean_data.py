@@ -22,14 +22,13 @@ def write_features_to_db(df, db_path=DB_PATH):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
-    for _, row in df.iterrows():
-        cursor.execute("""
-            UPDATE photos
-            SET taken_year = ?, taken_month = ?, taken_day = ?,
-                taken_weekday = ?, taken_hour = ?
-            WHERE id = ?
-        """, (row["taken_year"], row["taken_month"], row["taken_day"],
-              row["taken_weekday"], row["taken_hour"], row["id"]))
+    rows = df[["taken_year", "taken_month", "taken_day", "taken_weekday", "taken_hour", "id"]].values.tolist()
+    cursor.executemany("""
+        UPDATE photos
+        SET taken_year = ?, taken_month = ?, taken_day = ?,
+            taken_weekday = ?, taken_hour = ?
+        WHERE id = ?
+    """, rows)
 
     conn.commit()
     conn.close()
@@ -66,15 +65,14 @@ def populate_daily_summary(df, db_path=DB_PATH):
     cursor = conn.cursor()
     cursor.execute("DELETE FROM daily_summary")
 
-    for _, row in daily.iterrows():
-        cursor.execute("""
-            INSERT INTO daily_summary
-                (taken_year, taken_month, taken_day, taken_weekday,
-                 total_count, photo_count, video_count, burst_day)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (int(row["taken_year"]), int(row["taken_month"]), int(row["taken_day"]),
-              int(row["taken_weekday"]), int(row["total_count"]),
-              int(row["photo_count"]), int(row["video_count"]), int(row["burst_day"])))
+    rows = daily[["taken_year", "taken_month", "taken_day", "taken_weekday",
+                   "total_count", "photo_count", "video_count", "burst_day"]].values.tolist()
+    cursor.executemany("""
+        INSERT INTO daily_summary
+            (taken_year, taken_month, taken_day, taken_weekday,
+             total_count, photo_count, video_count, burst_day)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """, rows)
 
     conn.commit()
     conn.close()
