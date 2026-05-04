@@ -28,6 +28,7 @@ def main():
     visualizations.plot_hourly_distribution(viz_df)
     visualizations.plot_weekday_distribution(viz_df)
     visualizations.plot_media_type_pie(viz_df)
+    visualizations.plot_seasonal_breakdown(viz_df)
 
     print("\n=== Step 5: Running ML models ===")
     monthly_df = ml_models.load_monthly_counts()

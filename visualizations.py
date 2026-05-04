@@ -80,9 +80,32 @@ def plot_media_type_pie(df):
     plt.close()
     print("Saved media_type_breakdown.png")
 
+def plot_seasonal_breakdown(df):
+    def get_season(month):
+        if month in (12, 1, 2): return "Winter"
+        if month in (3, 4, 5):  return "Spring"
+        if month in (6, 7, 8):  return "Summer"
+        return "Fall"
+
+    df = df.copy()
+    df["season"] = df["taken_month"].apply(get_season)
+    order = ["Spring", "Summer", "Fall", "Winter"]
+    counts = df.groupby("season").size().reindex(order, fill_value=0)
+
+    plt.figure(figsize=(7, 4))
+    plt.bar(counts.index, counts.values, color=["#a8d8a8", "#f9c74f", "#f4845f", "#90c7e8"])
+    plt.xlabel("Season")
+    plt.ylabel("Number of Photos")
+    plt.title("Photo Count by Season")
+    plt.tight_layout()
+    plt.savefig(os.path.join(PLOTS_DIR, "seasonal_breakdown.png"))
+    plt.close()
+    print("Saved seasonal_breakdown.png")
+
 if __name__ == "__main__":
     df = load_data()
     plot_monthly_trend(df)
     plot_hourly_distribution(df)
     plot_weekday_distribution(df)
     plot_media_type_pie(df)
+    plot_seasonal_breakdown(df)

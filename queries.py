@@ -122,6 +122,20 @@ def main():
 
     streak_analysis(conn)
 
+    run_query(conn, "Photos by season",
+        """SELECT
+               CASE
+                   WHEN taken_month IN (12, 1, 2) THEN 'Winter'
+                   WHEN taken_month IN (3, 4, 5)  THEN 'Spring'
+                   WHEN taken_month IN (6, 7, 8)  THEN 'Summer'
+                   ELSE 'Fall'
+               END as season,
+               COUNT(*) as count
+           FROM photos
+           WHERE taken_month IS NOT NULL
+           GROUP BY season
+           ORDER BY count DESC""")
+
     conn.close()
 
 if __name__ == "__main__":
