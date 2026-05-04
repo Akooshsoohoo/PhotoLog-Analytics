@@ -1,5 +1,6 @@
 import sqlite3
 import pandas as pd
+from datetime import timedelta
 
 DB_PATH = "photos.db"
 
@@ -7,6 +8,46 @@ def run_query(conn, label, sql):
     print(f"\n--- {label} ---")
     df = pd.read_sql_query(sql, conn)
     print(df.to_string(index=False))
+
+def streak_analysis(conn):
+    df = pd.read_sql_query(
+        """SELECT DISTINCT taken_year, taken_month, taken_day
+           FROM photos
+           WHERE taken_year IS NOT NULL
+           ORDER BY taken_year, taken_month, taken_day""",
+        conn
+    )
+
+    df["date"] = pd.to_datetime(df[["taken_year", "taken_month", "taken_day"]].rename(
+        columns={"taken_year": "year", "taken_month": "month", "taken_day": "day"}
+    ))
+
+    df = df.sort_values("date").reset_index(drop=True)
+    df["diff"] = df["date"].diff()
+
+    streak = 1
+    best = 1
+    best_start = df["date"].iloc[0]
+    cur_start = df["date"].iloc[0]
+
+    for i in range(1, len(df)):
+        if df["diff"].iloc[i] == timedelta(days=1):
+            streak += 1
+            if streak > best:
+                best = streak
+                best_start = cur_start
+        else:
+            streak = 1
+            cur_start = df["date"].iloc[i]
+
+    gaps = df[df["diff"] > timedelta(days=1)].copy()
+    gaps["gap_days"] = gaps["diff"].dt.days
+    longest_gap = gaps.nlargest(1, "gap_days").iloc[0]
+
+    print("\n--- Streak Analysis ---")
+    print(f"Longest streak:  {best} consecutive days (starting {best_start.date()})")
+    print(f"Longest gap:     {int(longest_gap['gap_days'])} days (ending {longest_gap['date'].date()})")
+    print(f"Total active days: {len(df)}")
 
 def main():
     conn = sqlite3.connect(DB_PATH)
@@ -78,6 +119,8 @@ def main():
            GROUP BY d.taken_year, d.taken_month, d.taken_day
            ORDER BY d.total_count DESC
            LIMIT 5""")
+
+    streak_analysis(conn)
 
     conn.close()
 
