@@ -10,9 +10,8 @@ import clean_data
 import export_json
 
 app = Flask(__name__, static_folder="web")
-app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024  # 50 MB per batch
+app.config["MAX_CONTENT_LENGTH"] = 50 * 1024 * 1024
 
-# session_id -> tmpdir path
 sessions = {}
 
 @app.route("/")

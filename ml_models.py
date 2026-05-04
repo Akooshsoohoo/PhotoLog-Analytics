@@ -91,7 +91,6 @@ def run_kmeans_clustering(monthly_df):
     kmeans = KMeans(n_clusters=3, random_state=42, n_init=10)
     df["cluster"] = kmeans.fit_predict(X_scaled)
 
-    # label clusters by mean count so output is interpretable
     cluster_means = df.groupby("cluster")["count"].mean().sort_values()
     label_map = {cluster_means.index[0]: "low", cluster_means.index[1]: "mid", cluster_means.index[2]: "high"}
     df["activity"] = df["cluster"].map(label_map)

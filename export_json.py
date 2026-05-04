@@ -14,48 +14,41 @@ def query(conn, sql):
 def build_data(db_path=DB_PATH):
     conn = sqlite3.connect(db_path)
 
-    # total photos per year
     yearly = query(conn, """
         SELECT taken_year as year, COUNT(*) as count
         FROM photos WHERE taken_year IS NOT NULL
         GROUP BY taken_year ORDER BY taken_year
     """)
 
-    # photos per month (all years combined)
     monthly = query(conn, """
         SELECT taken_month as month, COUNT(*) as count
         FROM photos WHERE taken_month IS NOT NULL
         GROUP BY taken_month ORDER BY taken_month
     """)
 
-    # hour of day distribution
     hourly = query(conn, """
         SELECT taken_hour as hour, COUNT(*) as count
         FROM photos WHERE taken_hour IS NOT NULL
         GROUP BY taken_hour ORDER BY taken_hour
     """)
 
-    # day of week distribution
     weekday = query(conn, """
         SELECT taken_weekday as weekday, COUNT(*) as count
         FROM photos WHERE taken_weekday IS NOT NULL
         GROUP BY taken_weekday ORDER BY taken_weekday
     """)
 
-    # media type breakdown
     media = query(conn, """
         SELECT media_type, COUNT(*) as count
         FROM photos GROUP BY media_type
     """)
 
-    # burst days per year
     burst = query(conn, """
         SELECT taken_year as year, COUNT(*) as burst_days
         FROM daily_summary WHERE burst_day = 1
         GROUP BY taken_year ORDER BY taken_year
     """)
 
-    # year-over-year change
     yoy = query(conn, """
         SELECT curr.taken_year as year,
                curr.count as this_year,
@@ -69,7 +62,6 @@ def build_data(db_path=DB_PATH):
         ORDER BY curr.taken_year
     """)
 
-    # summary stats
     stats = query(conn, """
         SELECT
             COUNT(*) as total,
@@ -80,7 +72,6 @@ def build_data(db_path=DB_PATH):
         FROM photos WHERE taken_year IS NOT NULL
     """)[0]
 
-    # per-year breakdowns for the year filter
     years = [r["year"] for r in yearly]
     by_year = {}
     for yr in years:
