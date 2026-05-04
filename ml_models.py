@@ -1,8 +1,14 @@
 import sqlite3
 import pandas as pd
+import matplotlib.pyplot as plt
+import os
 from sklearn.linear_model import LinearRegression, LogisticRegression
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score, accuracy_score, classification_report
+
+PLOTS_DIR = "plots"
 
 DB_PATH = "photos.db"
 
@@ -75,6 +81,41 @@ def run_logistic_regression(daily_df):
     print(f"Accuracy: {accuracy_score(y_test, y_pred):.4f}")
     print(classification_report(y_test, y_pred, target_names=["low", "high"]))
 
+def run_kmeans_clustering(monthly_df):
+    df = monthly_df.copy()
+    X = df[["taken_month", "count"]]
+
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+
+    kmeans = KMeans(n_clusters=3, random_state=42, n_init=10)
+    df["cluster"] = kmeans.fit_predict(X_scaled)
+
+    # label clusters by mean count so output is interpretable
+    cluster_means = df.groupby("cluster")["count"].mean().sort_values()
+    label_map = {cluster_means.index[0]: "low", cluster_means.index[1]: "mid", cluster_means.index[2]: "high"}
+    df["activity"] = df["cluster"].map(label_map)
+
+    print("\n--- K-Means Clustering: Monthly Activity Levels (k=3) ---")
+    summary = df.groupby("activity")["count"].agg(["mean", "min", "max", "count"])
+    print(summary.to_string())
+
+    os.makedirs(PLOTS_DIR, exist_ok=True)
+    colors = {"low": "#90c7e8", "mid": "#f9c74f", "high": "#f4845f"}
+    fig, ax = plt.subplots(figsize=(8, 5))
+    for label, group in df.groupby("activity"):
+        ax.scatter(group["taken_month"], group["count"], label=label,
+                   color=colors[label], s=60, alpha=0.8)
+    ax.set_xlabel("Month")
+    ax.set_ylabel("Photo Count")
+    ax.set_title("Monthly Activity Clusters (K-Means, k=3)")
+    ax.set_xticks(range(1, 13))
+    ax.legend(title="Activity Level")
+    plt.tight_layout()
+    plt.savefig(os.path.join(PLOTS_DIR, "kmeans_clusters.png"))
+    plt.close()
+    print("Saved kmeans_clusters.png")
+
 if __name__ == "__main__":
     monthly_df = load_monthly_counts()
     print("Monthly photo counts:")
@@ -85,3 +126,5 @@ if __name__ == "__main__":
     daily_df = load_daily_counts()
     show_correlations(daily_df)
     run_logistic_regression(daily_df)
+
+    run_kmeans_clustering(monthly_df)
