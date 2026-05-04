@@ -9,15 +9,18 @@ import visualizations
 import ml_models
 import export_json
 
+DB_PATH = "photos.db"
+
 def main():
     print("=== Step 1: Parsing Takeout JSON files ===")
     parse_data.main()
 
     print("\n=== Step 2: Cleaning data and extracting features ===")
-    df = clean_data.load_from_db()
+    df = clean_data.load_from_db(DB_PATH)
     df = clean_data.extract_time_features(df)
     df = clean_data.drop_bad_rows(df)
-    clean_data.write_features_to_db(df)
+    clean_data.write_features_to_db(df, DB_PATH)
+    clean_data.populate_daily_summary(df, DB_PATH)
 
     print("\n=== Step 3: Running SQL queries ===")
     queries.main()

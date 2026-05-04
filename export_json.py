@@ -11,9 +11,8 @@ def query(conn, sql):
     cols = [d[0] for d in cursor.description]
     return [dict(zip(cols, row)) for row in cursor.fetchall()]
 
-def main():
-    os.makedirs(OUT_DIR, exist_ok=True)
-    conn = sqlite3.connect(DB_PATH)
+def build_data(db_path=DB_PATH):
+    conn = sqlite3.connect(db_path)
 
     # total photos per year
     yearly = query(conn, """
@@ -117,10 +116,14 @@ def main():
         "by_year": by_year,
     }
 
+    return data
+
+def main():
+    os.makedirs(OUT_DIR, exist_ok=True)
+    data = build_data(DB_PATH)
     out_path = os.path.join(OUT_DIR, "photos.json")
     with open(out_path, "w") as f:
         json.dump(data, f, indent=2)
-
     print(f"Exported data to {out_path}")
 
 if __name__ == "__main__":

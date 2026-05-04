@@ -3,8 +3,8 @@ import pandas as pd
 
 DB_PATH = "photos.db"
 
-def load_from_db():
-    conn = sqlite3.connect(DB_PATH)
+def load_from_db(db_path=DB_PATH):
+    conn = sqlite3.connect(db_path)
     df = pd.read_sql_query("SELECT * FROM photos", conn)
     conn.close()
     return df
@@ -18,8 +18,8 @@ def extract_time_features(df):
     df["taken_hour"] = df["dt"].dt.hour
     return df
 
-def write_features_to_db(df):
-    conn = sqlite3.connect(DB_PATH)
+def write_features_to_db(df, db_path=DB_PATH):
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
     for _, row in df.iterrows():
@@ -33,7 +33,6 @@ def write_features_to_db(df):
 
     conn.commit()
     conn.close()
-    print("Done writing features to database")
 
 def drop_bad_rows(df):
     before = len(df)
@@ -54,7 +53,7 @@ def flag_burst_days(daily_df):
     print(f"Flagged {burst_count} burst days (IQR threshold: {threshold:.1f} photos/day)")
     return daily_df
 
-def populate_daily_summary(df):
+def populate_daily_summary(df, db_path=DB_PATH):
     daily = df.groupby(["taken_year", "taken_month", "taken_day", "taken_weekday"]).agg(
         total_count=("title", "count"),
         photo_count=("media_type", lambda x: (x == "photo").sum()),
@@ -63,7 +62,7 @@ def populate_daily_summary(df):
 
     daily = flag_burst_days(daily)
 
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute("DELETE FROM daily_summary")
 
@@ -82,11 +81,11 @@ def populate_daily_summary(df):
     print(f"Populated daily_summary with {len(daily)} rows")
 
 if __name__ == "__main__":
-    df = load_from_db()
+    df = load_from_db(DB_PATH)
     print(f"Loaded {len(df)} rows")
 
     df = extract_time_features(df)
     df = drop_bad_rows(df)
-    write_features_to_db(df)
-    populate_daily_summary(df)
+    write_features_to_db(df, DB_PATH)
+    populate_daily_summary(df, DB_PATH)
     print(df[["title", "photo_taken_ts", "taken_year", "taken_month", "taken_hour"]].head())

@@ -29,15 +29,15 @@ def parse_record(data):
 
     return (title, photo_taken_ts, None, None, None, None, None, device_type, media_type, ext, has_geo)
 
-def load_into_db(records):
-    # remove old db so we start fresh each run
-    if os.path.exists(DB_PATH):
-        os.remove(DB_PATH)
+def load_into_db(records, db_path=DB_PATH):
+    if os.path.exists(db_path):
+        os.remove(db_path)
 
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
-    with open("schema.sql") as f:
+    schema_path = os.path.join(os.path.dirname(__file__), "schema.sql")
+    with open(schema_path) as f:
         cursor.executescript(f.read())
 
     cursor.executemany("""
@@ -49,21 +49,23 @@ def load_into_db(records):
     conn.commit()
     conn.close()
 
-def main():
-    json_files = collect_json_files()
-    print(f"Found {len(json_files)} json sidecar files")
-
+def parse_from_paths(json_paths, db_path=DB_PATH):
     records = []
-    for path in json_files:
+    for path in json_paths:
         try:
             with open(path, "r", encoding="utf-8") as f:
                 data = json.load(f)
             records.append(parse_record(data))
         except Exception:
-            pass  # skip malformed files
+            pass
+    load_into_db(records, db_path)
+    return len(records)
 
-    load_into_db(records)
-    print(f"Inserted {len(records)} rows into {DB_PATH}")
+def main():
+    json_files = collect_json_files()
+    print(f"Found {len(json_files)} json sidecar files")
+    n = parse_from_paths(json_files, DB_PATH)
+    print(f"Inserted {n} rows into {DB_PATH}")
 
 if __name__ == "__main__":
     main()
