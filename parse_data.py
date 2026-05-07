@@ -2,17 +2,16 @@ import json
 import os
 import sqlite3
 
-TAKEOUT_PATH = r"C:\Users\1saha\OneDrive\Desktop\The Mainframe\takeout-20260419T154518Z-3-001\Takeout\Google Photos"
-YEARS = ["Photos from 2022", "Photos from 2023", "Photos from 2024", "Photos from 2025"]
+TAKEOUT_PATH = r"C:\Users\1saha\Downloads\FullTakeout"
 DB_PATH = "photos.db"
 
 def collect_json_files():
     json_files = []
-    for year_folder in YEARS:
-        folder_path = os.path.join(TAKEOUT_PATH, year_folder)
-        for file_name in os.listdir(folder_path):
-            if file_name.endswith(".json"):
-                json_files.append(os.path.join(folder_path, file_name))
+    for root, _dirs, files in os.walk(TAKEOUT_PATH):
+        if os.path.basename(root).startswith("Photos from "):
+            for f in files:
+                if f.endswith(".json"):
+                    json_files.append(os.path.join(root, f))
     return json_files
 
 def parse_record(data):

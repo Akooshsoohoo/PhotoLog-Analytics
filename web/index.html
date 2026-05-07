@@ -198,7 +198,7 @@
     <div class="chart-box">
       <h2>Year-over-Year Change (%)</h2>
       <canvas id="yoyChart"></canvas>
-      <p class="note">Excludes 2022 (no prior year to compare)</p>
+      <p class="note" id="yoyNote"></p>
     </div>
 
     <div class="chart-box">
@@ -237,13 +237,13 @@
     <div class="chart-box">
       <h2>Burst Days per Year (IQR Outlier Detection)</h2>
       <canvas id="burstChart"></canvas>
-      <p class="note">Days with &gt;25.2 photos flagged as bursts (1.5×IQR above Q3)</p>
+      <p class="note" id="burstNote"></p>
     </div>
 
     <div class="chart-box">
       <h2>Feature Correlation with Daily Photo Count</h2>
       <canvas id="corrChart"></canvas>
-      <p class="note">Month is the strongest predictor; year shows declining trend</p>
+      <p class="note" id="corrNote"></p>
     </div>
 
   </div>
@@ -370,7 +370,11 @@
     renderYoY("yoyChart", data);
     renderPie("mediaChart", data.media, d => d.media_type, d => d.count);
     renderBar("burstChart", data.burst, d => d.year, d => d.burst_days, RED);
-    renderCorr("corrChart");
+    const burstNote = document.getElementById("burstNote");
+    if (burstNote && data.stats.burst_threshold != null) {
+      burstNote.textContent = `Days with >${data.stats.burst_threshold} photos flagged as bursts (1.5×IQR above Q3)`;
+    }
+    renderCorr("corrChart", data);
     renderFiltered(data, "all");
 
     sel.addEventListener("change", () => renderFiltered(data, sel.value));
@@ -436,17 +440,17 @@
       {
         cls: "",
         value: MONTH_NAMES[peakMonth.month - 1],
-        desc: `Most active month overall with ${peakMonth.count.toLocaleString()} photos — consistent across all four years`
+        desc: `Most active month overall with ${peakMonth.count.toLocaleString()} photos`
       },
       {
         cls: "orange",
         value: `${formatHour(displayHour)} ${tz}`,
-        desc: `Peak photo-taking hour (${tz}) — evening activity dominates`
+        desc: `Peak photo-taking hour (${tz})`
       },
       {
         cls: "green",
         value: DAY_NAMES[peakDay.weekday],
-        desc: `Most active day of the week with ${peakDay.count.toLocaleString()} total photos across all years`
+        desc: `Most active day of the week with ${peakDay.count.toLocaleString()} photos`
       },
     ];
 
@@ -460,7 +464,12 @@
 
   function renderYoY(id, data) {
     const filtered = data.yoy.filter(d => d.pct_change !== null);
-    const colors   = filtered.map(d => d.pct_change >= 0 ? GREEN : RED);
+    const excluded = data.yoy.filter(d => d.pct_change === null).map(d => d.year);
+    const note = document.getElementById("yoyNote");
+    if (note) note.textContent = excluded.length
+      ? `Excludes ${excluded.join(", ")} (no prior year to compare)`
+      : "";
+    const colors = filtered.map(d => d.pct_change >= 0 ? GREEN : RED);
 
     new Chart(document.getElementById(id), {
       type: "bar",
@@ -481,10 +490,19 @@
     });
   }
 
-  function renderCorr(id) {
+  function renderCorr(id, data) {
+    const c = data.stats.correlations || {weekday: 0, month: 0, year: 0};
     const features = ["Weekday", "Month", "Year"];
-    const values   = [0.1295, 0.2665, -0.3313];
+    const values   = [c.weekday, c.month, c.year];
     const colors   = values.map(v => v >= 0 ? BLUE : RED);
+
+    const note = document.getElementById("corrNote");
+    if (note) {
+      const labels = {weekday: "Weekday", month: "Month", year: "Year"};
+      const strongest = Object.entries(c).reduce((a, b) => Math.abs(b[1]) > Math.abs(a[1]) ? b : a);
+      const direction = strongest[1] >= 0 ? "positive" : "negative";
+      note.textContent = `${labels[strongest[0]]} is the strongest predictor (${direction} correlation)`;
+    }
 
     new Chart(document.getElementById(id), {
       type: "bar",

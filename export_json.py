@@ -72,6 +72,32 @@ def build_data(db_path=DB_PATH):
         FROM photos WHERE taken_year IS NOT NULL
     """)[0]
 
+    daily_rows = query(conn, "SELECT taken_year, taken_month, taken_weekday, total_count FROM daily_summary")
+    if daily_rows:
+        import statistics
+        counts = [r["total_count"] for r in daily_rows]
+        q1, q3 = statistics.quantiles(counts, n=4)[0], statistics.quantiles(counts, n=4)[2]
+        stats["burst_threshold"] = round(q3 + 1.5 * (q3 - q1), 1)
+
+        def pearson(xs, ys):
+            n = len(xs)
+            mx, my = sum(xs)/n, sum(ys)/n
+            num = sum((x-mx)*(y-my) for x, y in zip(xs, ys))
+            den = (sum((x-mx)**2 for x in xs) * sum((y-my)**2 for y in ys)) ** 0.5
+            return round(num/den, 4) if den else 0
+
+        years    = [r["taken_year"]    for r in daily_rows]
+        months   = [r["taken_month"]   for r in daily_rows]
+        weekdays = [r["taken_weekday"] for r in daily_rows]
+        stats["correlations"] = {
+            "weekday": pearson(weekdays, counts),
+            "month":   pearson(months,   counts),
+            "year":    pearson(years,    counts),
+        }
+    else:
+        stats["burst_threshold"] = None
+        stats["correlations"] = {"weekday": 0, "month": 0, "year": 0}
+
     years = [r["year"] for r in yearly]
     by_year = {}
     for yr in years:
