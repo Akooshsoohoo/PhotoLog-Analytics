@@ -6,6 +6,8 @@ CS 210 Final Project — analyzing personal photo-taking behavior using Google P
 
 **GitHub:** https://github.com/Akooshsoohoo/PhotoLog-Analytics
 
+**Demo video:** https://www.youtube.com/watch?v=Unw3EFVc13o
+
 ---
 
 ## What it does
