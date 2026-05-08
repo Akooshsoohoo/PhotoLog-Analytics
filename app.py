@@ -18,6 +18,12 @@ sessions = {}
 def index():
     return send_from_directory("web", "index.html")
 
+@app.route("/data/photos.json")
+def prebuilt_data():
+    if os.environ.get("RENDER"):
+        return "", 404
+    return send_from_directory("web/data", "photos.json")
+
 @app.route("/<path:path>")
 def static_files(path):
     return send_from_directory("web", path)
